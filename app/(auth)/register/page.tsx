@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,29 +14,26 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState("")
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-        },
-      },
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, fullName }),
     })
 
-    if (error) {
-      toast.error(error.message)
+    const data = await res.json()
+
+    if (!res.ok) {
+      toast.error(data.error || "Failed to create account")
       setLoading(false)
       return
     }
 
-    toast.success("Account created! Check your email to confirm.")
+    toast.success("Account created! You can now sign in.")
     router.push("/login")
   }
 
