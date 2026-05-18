@@ -1,0 +1,81 @@
+const { createClient } = require("@supabase/supabase-js")
+
+const supabase = createClient(
+  "https://nyklrrynqyrbtdletkos.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im55a2xycnlucXlyYnRkbGV0a29zIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3OTA5OTk1MSwiZXhwIjoyMDk0Njc1OTUxfQ.XsxgTdD1EfN3PH7K5T8ls3PKuGKZGLTOKXatGI8Dpc0"
+)
+
+const brands = [
+  { id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Nike", slug: "nike", description: "Just Do It.", approved: true, featured: true },
+  { id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Adidas", slug: "adidas", description: "Impossible is Nothing.", approved: true, featured: true },
+  { id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Off-White", slug: "off-white", description: "Virgil Abloh visionary streetwear.", approved: true, featured: true },
+  { id: "a1b2c3d4-0001-4000-8000-000000000001", name: "Fear of God", slug: "fear-of-god", description: "Luxury streetwear by Jerry Lorenzo.", approved: true, featured: true },
+  { id: "a1b2c3d4-0002-4000-8000-000000000002", name: "Balenciaga", slug: "balenciaga", description: "Avant-garde fashion house.", approved: true, featured: true },
+]
+
+const products = [
+  // Nike (10)
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Air Max 90", description: "Iconic sneaker with visible Air cushioning.", price: 149.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#ff0000","name":"Red"}], images: ["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80"], stock: 50, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Air Force 1", description: "Timeless classic basketball shoe.", price: 129.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=600&q=80"], stock: 40, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Dunk Low Retro", description: "Basketball icon turned streetwear staple.", price: 119.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#ff0000","name":"Red"},{"hex":"#0000ff","name":"Blue"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80"], stock: 35, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Classic Crew Socks", description: "Comfortable everyday crew socks.", price: 19.99, category: "Accessories", sizes: ["One Size"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1586350977771-b3b0abd50c82?w=600&q=80"], stock: 100, featured: false },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Tech Fleece Hoodie", description: "Premium fleece hoodie with modern fit.", price: 119.99, compare_price: 149.99, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"},{"hex":"#000080","name":"Navy"}], images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&q=80"], stock: 45, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Windrunner Jacket", description: "Lightweight running jacket with iconic chevron.", price: 149.99, category: "Women", sizes: ["XS","S","M","L","XL"], colors: [{"hex":"#0000ff","name":"Blue"},{"hex":"#000000","name":"Black"},{"hex":"#ff0000","name":"Red"}], images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80"], stock: 30, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Pegasus Trail 4", description: "Trail running shoe with rugged outsole.", price: 159.99, category: "Men", sizes: ["7","8","9","10","11","12","13"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"},{"hex":"#00ff00","name":"Green"}], images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80"], stock: 25, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Air Zoom Vapor", description: "Elite tennis shoe for match-day performance.", price: 189.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#ff0000","name":"Red"}], images: ["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&q=80"], stock: 20, featured: true },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Dri-FIT Training Tee", description: "Moisture-wicking training shirt.", price: 44.99, compare_price: 59.99, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&q=80"], stock: 80, featured: false },
+  { brand_id: "72d5834b-8c82-4d32-b6be-d31e44309fc4", name: "Air Force 1 Sage Low", description: "Low-top platform AF1 for women.", price: 139.99, category: "Women", sizes: ["5","6","7","8","9","10"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#ffe4e1","name":"Blush"}], images: ["https://images.unsplash.com/photo-1597045566677-8cf032ed8434?w=600&q=80"], stock: 35, featured: true },
+  // Adidas (8)
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Ultraboost 23", description: "Ultimate energy return with every stride.", price: 189.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80"], stock: 30, featured: true },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Superstar", description: "The original shell-toe sneaker.", price: 89.99, category: "Women", sizes: ["5","6","7","8","9","10"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1605196188105-af39f84e06d8?w=600&q=80"], stock: 45, featured: true },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Forum Low", description: "Classic basketball sneaker reissued.", price: 99.99, compare_price: 129.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#0000ff","name":"Blue"}], images: ["https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=600&q=80"], stock: 40, featured: true },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Adilette Slides", description: "Comfortable pool slides with iconic stripes.", price: 34.99, category: "Accessories", sizes: ["6","7","8","9","10","11","12"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"},{"hex":"#0000ff","name":"Blue"}], images: ["https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=600&q=80"], stock: 120, featured: false },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "3-Stripes Tee", description: "Classic cotton tee with signature 3-Stripes.", price: 34.99, compare_price: 44.99, category: "Women", sizes: ["XS","S","M","L","XL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"},{"hex":"#ff69b4","name":"Pink"}], images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80"], stock: 90, featured: true },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Adicolor Classic Hoodie", description: "French terry hoodie with trefoil logo.", price: 74.99, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#000080","name":"Navy"},{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80"], stock: 55, featured: false },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Runfalcon 3.0", description: "Lightweight everyday running shoe.", price: 69.99, category: "Women", sizes: ["5","6","7","8","9","10"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#ff69b4","name":"Pink"}], images: ["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80"], stock: 60, featured: false },
+  { brand_id: "b457e310-195c-4d9d-b152-cb9480fab6f7", name: "Gazelle Indoor", description: "Indoor soccer trainer turned lifestyle sneaker.", price: 109.99, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"},{"hex":"#00ff00","name":"Green"}], images: ["https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=600&q=80"], stock: 25, featured: true },
+  // Off-White (6)
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Arrows Hoodie", description: "Signature Off-White hoodie with arrow motif.", price: 395.00, category: "Men", sizes: ["S","M","L","XL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&q=80"], stock: 20, featured: true },
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Diagonal Zip Hoodie", description: "Zip hoodie with industrial diagonal zipper.", price: 525.00, category: "Men", sizes: ["S","M","L","XL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"}], images: ["https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&q=80"], stock: 15, featured: true },
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Off-Court Sneakers", description: "High-top sneakers with Off-White branding.", price: 695.00, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"}], images: ["https://images.unsplash.com/photo-1597045566677-8cf032ed8434?w=600&q=80"], stock: 10, featured: true },
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Industrial Belt", description: "Yellow industrial belt with arrow print.", price: 295.00, compare_price: 350.00, category: "Accessories", sizes: ["One Size"], colors: [{"hex":"#ffff00","name":"Yellow"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80"], stock: 50, featured: true },
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Caravaggio Tee", description: "Graphic tee with Caravaggio painting print.", price: 245.00, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80"], stock: 30, featured: false },
+  { brand_id: "0112c7b3-739c-462a-874a-aed51e1cf797", name: "Out Of Office Sneakers", description: "Low-top sneakers with arrow motif.", price: 595.00, category: "Women", sizes: ["5","6","7","8","9","10"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#ff69b4","name":"Pink"}], images: ["https://images.unsplash.com/photo-1603808033192-082d6919d3e1?w=600&q=80"], stock: 12, featured: true },
+  // Fear of God (5)
+  { brand_id: "a1b2c3d4-0001-4000-8000-000000000001", name: "Essentials Hoodie", description: "Signature heavyweight fleece hoodie.", price: 110.00, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#808080","name":"Grey"},{"hex":"#000000","name":"Black"},{"hex":"#f5f5dc","name":"Cream"}], images: ["https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&q=80"], stock: 80, featured: true },
+  { brand_id: "a1b2c3d4-0001-4000-8000-000000000001", name: "Essentials Jogger", description: "Relaxed-fit fleece jogger.", price: 95.00, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#808080","name":"Grey"},{"hex":"#000000","name":"Black"},{"hex":"#f5f5dc","name":"Cream"}], images: ["https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=600&q=80"], stock: 60, featured: true },
+  { brand_id: "a1b2c3d4-0001-4000-8000-000000000001", name: "Essentials Tee", description: "Relaxed-fit crewneck tee.", price: 65.00, compare_price: 85.00, category: "Men", sizes: ["S","M","L","XL","XXL"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#808080","name":"Grey"}], images: ["https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=600&q=80"], stock: 120, featured: false },
+  { brand_id: "a1b2c3d4-0001-4000-8000-000000000001", name: "California Bomber", description: "Satin bomber jacket with Fear of God branding.", price: 695.00, category: "Men", sizes: ["S","M","L","XL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#000080","name":"Navy"}], images: ["https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80"], stock: 15, featured: true },
+  { brand_id: "a1b2c3d4-0001-4000-8000-000000000001", name: "Eternal Denim", description: "Slim-fit raw denim with signature details.", price: 350.00, category: "Men", sizes: ["28","29","30","31","32","33","34"], colors: [{"hex":"#000080","name":"Indigo"},{"hex":"#000000","name":"Black"}], images: ["https://images.unsplash.com/photo-1542272454315-4c01d7abdf4a?w=600&q=80"], stock: 25, featured: false },
+  // Balenciaga (5)
+  { brand_id: "a1b2c3d4-0002-4000-8000-000000000002", name: "Speed Trainer", description: "Iconic sock-like knit sneaker.", price: 695.00, category: "Men", sizes: ["7","8","9","10","11","12"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"}], images: ["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&q=80"], stock: 20, featured: true },
+  { brand_id: "a1b2c3d4-0002-4000-8000-000000000002", name: "Triple S Sneaker", description: "Chunky triple-sole sneaker.", price: 995.00, category: "Men", sizes: ["7","8","9","10","11","12","13"], colors: [{"hex":"#ffffff","name":"White"},{"hex":"#000000","name":"Black"},{"hex":"#ff0000","name":"Red"}], images: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80"], stock: 10, featured: true },
+  { brand_id: "a1b2c3d4-0002-4000-8000-000000000002", name: "Hourglass Sunglasses", description: "Oversized shield sunglasses.", price: 595.00, category: "Accessories", sizes: ["One Size"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#c0c0c0","name":"Silver"}], images: ["https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=600&q=80"], stock: 40, featured: false },
+  { brand_id: "a1b2c3d4-0002-4000-8000-000000000002", name: "Logo T-Shirt", description: "Oversized tee with distressed logo.", price: 390.00, category: "Women", sizes: ["XS","S","M","L","XL"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#ffffff","name":"White"}], images: ["https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=600&q=80"], stock: 35, featured: true },
+  { brand_id: "a1b2c3d4-0002-4000-8000-000000000002", name: "City Bag", description: "Iconic motorcycle-inspired handbag.", price: 2150.00, category: "Accessories", sizes: ["One Size"], colors: [{"hex":"#000000","name":"Black"},{"hex":"#8B4513","name":"Brown"}], images: ["https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=600&q=80"], stock: 5, featured: false },
+]
+
+async function main() {
+  console.log("Clearing existing products and new brands...")
+  const brandIds = brands.map(b => b.id)
+  await supabase.from("products").delete().in("brand_id", brandIds)
+  await supabase.from("brands").delete().in("id", ["a1b2c3d4-0001-4000-8000-000000000001", "a1b2c3d4-0002-4000-8000-000000000002"])
+
+  console.log("Inserting brands...")
+  for (const brand of brands) {
+    const { error } = await supabase.from("brands").upsert(brand, { onConflict: "id" })
+    if (error) console.error("Brand error:", brand.name, error.message)
+    else console.log("  ✓", brand.name)
+  }
+
+  console.log("Inserting products...")
+  for (const product of products) {
+    const { error } = await supabase.from("products").insert(product)
+    if (error) console.error("Product error:", product.name, error.message)
+    else console.log("  ✓", product.name)
+  }
+
+  console.log("Done! Total products:", products.length)
+}
+
+main().catch(console.error)

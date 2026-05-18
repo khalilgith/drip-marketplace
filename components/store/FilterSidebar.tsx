@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { RotateCcw } from "lucide-react"
 
 const categories = ["Men", "Women", "Accessories"]
 
@@ -25,20 +26,33 @@ export function FilterSidebar({ brands }: FilterSidebarProps) {
     router.push(`/shop?${params.toString()}`)
   }
 
+  const hasFilters = currentCategory || currentBrand
+
   return (
     <aside className="w-full lg:w-64 shrink-0">
-      <div className="bg-white border border-gray-200 p-6 sticky top-24">
-        <h3 className="font-heading font-bold text-lg mb-4">Filters</h3>
+      <div className="bg-white border border-gray-100 p-7 sticky top-28">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="font-heading font-bold text-lg">Filters</h3>
+          {hasFilters && (
+            <button
+              onClick={() => router.push("/shop")}
+              className="text-xs text-navy/40 hover:text-gold transition-colors flex items-center gap-1"
+            >
+              <RotateCcw className="h-3 w-3" />
+              Reset
+            </button>
+          )}
+        </div>
 
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
-            Category
-          </h4>
-          <div className="space-y-2">
+        <div className="mb-7">
+          <h4 className="text-xs font-semibold text-navy uppercase tracking-[0.15em] mb-4">Category</h4>
+          <div className="space-y-1">
             <button
               onClick={() => setFilter("category", null)}
-              className={`block text-sm w-full text-left px-2 py-1 rounded ${
-                !currentCategory ? "bg-gold/10 text-gold font-medium" : "text-gray-600 hover:text-gold"
+              className={`block text-sm w-full text-left px-3 py-2 transition-all ${
+                !currentCategory
+                  ? "bg-gold/10 text-gold font-medium border-l-2 border-gold"
+                  : "text-navy/60 hover:text-gold hover:bg-gold/5 border-l-2 border-transparent"
               }`}
             >
               All
@@ -47,8 +61,10 @@ export function FilterSidebar({ brands }: FilterSidebarProps) {
               <button
                 key={cat}
                 onClick={() => setFilter("category", cat)}
-                className={`block text-sm w-full text-left px-2 py-1 rounded ${
-                  currentCategory === cat ? "bg-gold/10 text-gold font-medium" : "text-gray-600 hover:text-gold"
+                className={`block text-sm w-full text-left px-3 py-2 transition-all ${
+                  currentCategory === cat
+                    ? "bg-gold/10 text-gold font-medium border-l-2 border-gold"
+                    : "text-navy/60 hover:text-gold hover:bg-gold/5 border-l-2 border-transparent"
                 }`}
               >
                 {cat}
@@ -57,15 +73,15 @@ export function FilterSidebar({ brands }: FilterSidebarProps) {
           </div>
         </div>
 
-        <div className="mb-6">
-          <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">
-            Brand
-          </h4>
-          <div className="space-y-2">
+        <div>
+          <h4 className="text-xs font-semibold text-navy uppercase tracking-[0.15em] mb-4">Brand</h4>
+          <div className="space-y-1">
             <button
               onClick={() => setFilter("brand", null)}
-              className={`block text-sm w-full text-left px-2 py-1 rounded ${
-                !currentBrand ? "bg-gold/10 text-gold font-medium" : "text-gray-600 hover:text-gold"
+              className={`block text-sm w-full text-left px-3 py-2 transition-all ${
+                !currentBrand
+                  ? "bg-gold/10 text-gold font-medium border-l-2 border-gold"
+                  : "text-navy/60 hover:text-gold hover:bg-gold/5 border-l-2 border-transparent"
               }`}
             >
               All Brands
@@ -74,8 +90,10 @@ export function FilterSidebar({ brands }: FilterSidebarProps) {
               <button
                 key={brand.id}
                 onClick={() => setFilter("brand", brand.slug)}
-                className={`block text-sm w-full text-left px-2 py-1 rounded ${
-                  currentBrand === brand.slug ? "bg-gold/10 text-gold font-medium" : "text-gray-600 hover:text-gold"
+                className={`block text-sm w-full text-left px-3 py-2 transition-all ${
+                  currentBrand === brand.slug
+                    ? "bg-gold/10 text-gold font-medium border-l-2 border-gold"
+                    : "text-navy/60 hover:text-gold hover:bg-gold/5 border-l-2 border-transparent"
                 }`}
               >
                 {brand.name}
@@ -83,17 +101,6 @@ export function FilterSidebar({ brands }: FilterSidebarProps) {
             ))}
           </div>
         </div>
-
-        {currentCategory || currentBrand ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full text-red-500"
-            onClick={() => router.push("/shop")}
-          >
-            Clear Filters
-          </Button>
-        ) : null}
       </div>
     </aside>
   )

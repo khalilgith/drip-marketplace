@@ -25,14 +25,8 @@ export function ProductGrid({ products }: ProductGridProps) {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 md:gap-6">
-      {products.map((product, i) => (
-        <div
-          key={product.id}
-          className="reveal"
-          style={{ transitionDelay: `${i * 0.08}s` }}
-        >
-          <ProductCard product={product} />
-        </div>
+      {products.map((product) => (
+        <ProductCard key={product.id} product={product} />
       ))}
     </div>
   )

@@ -6,8 +6,19 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const featured = searchParams.get("featured")
   const category = searchParams.get("category")
-  const brand = searchParams.get("brand")
+  const brandSlug = searchParams.get("brand")
   const searchQ = searchParams.get("search")
+
+  // Resolve brand slug to brand_id first
+  let brandId: string | null = null
+  if (brandSlug) {
+    const { data: brand } = await supabase
+      .from("brands")
+      .select("id")
+      .eq("slug", brandSlug)
+      .single()
+    if (brand) brandId = brand.id
+  }
 
   let query = supabase
     .from("products")
@@ -20,8 +31,8 @@ export async function GET(request: NextRequest) {
   if (category) {
     query = query.eq("category", category)
   }
-  if (brand) {
-    query = query.eq("brands.slug", brand)
+  if (brandId) {
+    query = query.eq("brand_id", brandId)
   }
   if (searchQ) {
     query = query.ilike("name", `%${searchQ}%`)
@@ -33,7 +44,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json(data)
+  return NextResponse.json(data, {
+    headers: { "Cache-Control": "no-store, must-revalidate" },
+  })
 }
 
 export async function POST(request: Request) {

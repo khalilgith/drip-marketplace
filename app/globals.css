@@ -48,19 +48,6 @@
   }
 }
 
-/* === NOISE TEXTURE OVERLAY === */
-.noise-overlay::before {
-  content: "";
-  position: fixed;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  mix-blend-mode: overlay;
-}
-
 /* === ANIMATED BACKGROUND === */
 .hero-bg {
   position: absolute;
@@ -213,35 +200,6 @@
 .reveal-delay-3 { transition-delay: 0.3s; }
 .reveal-delay-4 { transition-delay: 0.4s; }
 
-/* === PRODUCT CARD TILT === */
-.tilt-card {
-  perspective: 1000px;
-}
-
-.tilt-card-inner {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  transform-style: preserve-3d;
-}
-
-.tilt-card:hover .tilt-card-inner {
-  transform: rotateX(3deg) rotateY(5deg);
-}
-
-.tilt-card:hover .tilt-card-glow {
-  opacity: 1;
-}
-
-.tilt-card-glow {
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(201, 168, 76, 0.3), transparent 40%, rgba(201, 168, 76, 0.1) 70%, transparent);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* === SHIMMER BUTTON === */
 .btn-shimmer {
   position: relative;
@@ -327,22 +285,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* === CARD BORDER GLOW === */
-.card-glow-border {
-  position: relative;
-}
-
-.card-glow-border::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, transparent, rgba(201, 168, 76, 0.3), transparent);
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  z-index: -1;
-}
-
-.card-glow-border:hover::before {
-  opacity: 1;
+/* === AUTH CARD FADE-IN === */
+.fade-in-card {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
