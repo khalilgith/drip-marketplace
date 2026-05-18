@@ -4,25 +4,25 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --background: 40 23% 95%;
+    --foreground: 222 47% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 222 47% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    --popover-foreground: 222 47% 8%;
+    --primary: 222 47% 8%;
+    --primary-foreground: 40 23% 95%;
+    --secondary: 42 52% 54%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 222 10% 46%;
+    --accent: 42 52% 54%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 10% 85%;
+    --input: 40 10% 85%;
+    --ring: 42 52% 54%;
     --radius: 0rem;
   }
 }
@@ -32,7 +32,10 @@
     @apply border-border;
   }
   body {
-    @apply bg-cream text-navy font-body;
+    @apply bg-cream text-navy font-body overflow-x-hidden;
+  }
+  ::selection {
+    @apply bg-gold/30 text-navy;
   }
 }
 
@@ -43,4 +46,303 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
+}
+
+/* === NOISE TEXTURE OVERLAY === */
+.noise-overlay::before {
+  content: "";
+  position: fixed;
+  inset: -50%;
+  width: 200%;
+  height: 200%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: overlay;
+}
+
+/* === ANIMATED BACKGROUND === */
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.hero-bg .orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: floatOrb 20s ease-in-out infinite;
+}
+
+.hero-bg .orb:nth-child(1) {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.3), transparent 70%);
+  top: -10%;
+  left: -5%;
+  animation-delay: 0s;
+}
+
+.hero-bg .orb:nth-child(2) {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.2), transparent 70%);
+  bottom: -15%;
+  right: -5%;
+  animation-delay: -7s;
+}
+
+.hero-bg .orb:nth-child(3) {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 70%);
+  top: 40%;
+  left: 50%;
+  animation-delay: -14s;
+}
+
+@keyframes floatOrb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -40px) scale(1.05); }
+  50% { transform: translate(-20px, 20px) scale(0.95); }
+  75% { transform: translate(40px, 30px) scale(1.02); }
+}
+
+/* === PARALLAX FLOATING IMAGES === */
+.floating-image {
+  position: absolute;
+  width: 280px;
+  height: 380px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+  animation: floatImage 25s ease-in-out infinite;
+  opacity: 0;
+}
+
+.floating-image:nth-child(1) {
+  top: 8%;
+  right: 8%;
+  animation-delay: 0s;
+}
+
+.floating-image:nth-child(2) {
+  top: 35%;
+  right: 2%;
+  width: 200px;
+  height: 260px;
+  animation-delay: -8s;
+}
+
+.floating-image:nth-child(3) {
+  bottom: 10%;
+  right: 15%;
+  width: 220px;
+  height: 300px;
+  animation-delay: -16s;
+}
+
+@keyframes floatImage {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  5%, 95% {
+    opacity: 0.6;
+  }
+  15% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+  30% {
+    transform: translateY(10px) rotate(-0.5deg);
+  }
+  50% {
+    transform: translateY(-15px) rotate(1.5deg);
+  }
+  70% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+  85% {
+    transform: translateY(-10px) rotate(0.5deg);
+  }
+}
+
+/* === REVEAL ANIMATIONS === */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+.reveal-delay-4 { transition-delay: 0.4s; }
+
+/* === PRODUCT CARD TILT === */
+.tilt-card {
+  perspective: 1000px;
+}
+
+.tilt-card-inner {
+  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.tilt-card:hover .tilt-card-inner {
+  transform: rotateX(3deg) rotateY(5deg);
+}
+
+.tilt-card:hover .tilt-card-glow {
+  opacity: 1;
+}
+
+.tilt-card-glow {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgba(201, 168, 76, 0.3), transparent 40%, rgba(201, 168, 76, 0.1) 70%, transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* === SHIMMER BUTTON === */
+.btn-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+  pointer-events: none;
+}
+
+/* === GLASS NAVBAR === */
+.glass-nav {
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  background: rgba(10, 15, 30, 0.85);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.1);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.glass-nav.scrolled {
+  background: rgba(10, 15, 30, 0.95);
+  box-shadow: 0 1px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* === GOLD TEXT GRADIENT === */
+.text-gold-gradient {
+  background: linear-gradient(135deg, #c9a84c, #e8c95a, #c9a84c, #b8963e);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+
+/* === HERO TEXT REVEAL === */
+.hero-title-line {
+  display: block;
+  overflow: hidden;
+}
+
+.hero-title-line span {
+  display: block;
+  animation: heroReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.hero-title-line:nth-child(1) span { animation-delay: 0.2s; }
+.hero-title-line:nth-child(2) span { animation-delay: 0.4s; }
+
+@keyframes heroReveal {
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* === MARQUEE === */
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+}
+
+.marquee-inner {
+  display: inline-flex;
+  animation: marqueeScroll 30s linear infinite;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* === CARD BORDER GLOW === */
+.card-glow-border {
+  position: relative;
+}
+
+.card-glow-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, transparent, rgba(201, 168, 76, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: -1;
+}
+
+.card-glow-border:hover::before {
+  opacity: 1;
 }

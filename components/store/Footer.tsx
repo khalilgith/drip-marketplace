@@ -2,44 +2,65 @@ import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="bg-navy text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <h3 className="text-2xl font-heading font-bold text-gold tracking-wider mb-4">DRIP</h3>
-            <p className="text-gray-400 text-sm">
+    <footer className="bg-navy text-white/60">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-16 grid grid-cols-2 md:grid-cols-4 gap-10">
+          <div className="col-span-2 md:col-span-1">
+            <Link href="/" className="text-3xl font-heading font-bold tracking-[0.15em] text-gold-gradient">
+              DRIP
+            </Link>
+            <p className="mt-4 text-sm text-white/40 leading-relaxed max-w-xs">
               Premium streetwear and footwear curated for those who refuse to blend in.
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider">Shop</h4>
-            <div className="flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="/shop" className="hover:text-gold transition-colors">All Products</Link>
-              <Link href="/shop?category=Men" className="hover:text-gold transition-colors">Men</Link>
-              <Link href="/shop?category=Women" className="hover:text-gold transition-colors">Women</Link>
-              <Link href="/shop?category=Accessories" className="hover:text-gold transition-colors">Accessories</Link>
-            </div>
+            <h4 className="text-white font-semibold text-xs uppercase tracking-[0.15em] mb-5">Shop</h4>
+            <ul className="space-y-3">
+              {[
+                { href: "/shop", label: "All Products" },
+                { href: "/shop?category=Men", label: "Men" },
+                { href: "/shop?category=Women", label: "Women" },
+                { href: "/shop?category=Accessories", label: "Accessories" },
+              ].map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="text-sm hover:text-gold transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider">Support</h4>
-            <div className="flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="#" className="hover:text-gold transition-colors">Contact</Link>
-              <Link href="#" className="hover:text-gold transition-colors">Shipping</Link>
-              <Link href="#" className="hover:text-gold transition-colors">Returns</Link>
-              <Link href="#" className="hover:text-gold transition-colors">FAQ</Link>
-            </div>
+            <h4 className="text-white font-semibold text-xs uppercase tracking-[0.15em] mb-5">Support</h4>
+            <ul className="space-y-3">
+              {["Contact", "Shipping", "Returns", "FAQ"].map((item) => (
+                <li key={item}>
+                  <Link href="#" className="text-sm hover:text-gold transition-colors">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider">Connect</h4>
-            <div className="flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="#" className="hover:text-gold transition-colors">Instagram</Link>
-              <Link href="#" className="hover:text-gold transition-colors">Twitter</Link>
-              <Link href="#" className="hover:text-gold transition-colors">TikTok</Link>
-            </div>
+            <h4 className="text-white font-semibold text-xs uppercase tracking-[0.15em] mb-5">Connect</h4>
+            <ul className="space-y-3">
+              {["Instagram", "Twitter", "TikTok", "YouTube"].map((item) => (
+                <li key={item}>
+                  <Link href="#" className="text-sm hover:text-gold transition-colors">
+                    {item}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-500">
-          &copy; {new Date().getFullYear()} DRIP. All rights reserved.
+        <div className="border-t border-white/5 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <p>&copy; {new Date().getFullYear()} DRIP. All rights reserved.</p>
+          <div className="flex items-center gap-6">
+            <Link href="#" className="hover:text-gold transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-gold transition-colors">Terms</Link>
+          </div>
         </div>
       </div>
     </footer>
