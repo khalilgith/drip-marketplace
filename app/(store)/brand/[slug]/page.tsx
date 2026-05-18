@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import { ProductGrid } from "@/components/store/ProductGrid"
 import { notFound } from "next/navigation"
 
@@ -9,7 +9,7 @@ interface BrandPageProps {
 }
 
 export default async function BrandPage({ params }: BrandPageProps) {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   const { data: brand } = await supabase
     .from("brands")

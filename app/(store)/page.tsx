@@ -1,12 +1,12 @@
 import { HeroBanner } from "@/components/store/HeroBanner"
 import { ProductGrid } from "@/components/store/ProductGrid"
 import { BrandCard } from "@/components/store/BrandCard"
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
 export default async function HomePage() {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   const { data: featuredProducts } = await supabase
     .from("products")

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import { ProductDetailClient } from "./ProductDetailClient"
 
 export const dynamic = "force-dynamic"
@@ -8,7 +8,7 @@ interface ProductPageProps {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   const { data: product } = await supabase
     .from("products")

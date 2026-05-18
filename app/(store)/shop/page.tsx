@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/server"
 import { ProductGrid } from "@/components/store/ProductGrid"
 import { FilterSidebar } from "@/components/store/FilterSidebar"
 
@@ -13,7 +13,7 @@ interface ShopPageProps {
 }
 
 export default async function ShopPage({ searchParams }: ShopPageProps) {
-  const supabase = createClient()
+  const supabase = createServiceClient()
 
   let productQuery = supabase
     .from("products")
