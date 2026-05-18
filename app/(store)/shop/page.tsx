@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { ProductGrid } from "@/components/store/ProductGrid"
 import { FilterSidebar } from "@/components/store/FilterSidebar"
 
-export default function ShopPage() {
+function ShopContent() {
   const searchParams = useSearchParams()
   const [products, setProducts] = useState<any[]>([])
   const [brands, setBrands] = useState<any[]>([])
@@ -20,7 +20,8 @@ export default function ShopPage() {
     if (brand) params.set("brand", brand)
     if (search) params.set("search", search)
 
-    fetch(`/api/products${params.toString() ? "?" + params.toString() : ""}`)
+    const qs = params.toString()
+    fetch(`/api/products${qs ? "?" + qs : ""}`)
       .then((r) => r.json())
       .then(setProducts)
       .catch(() => {})
@@ -48,5 +49,13 @@ export default function ShopPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="max-w-7xl mx-auto px-4 py-8"><p className="text-gray-500">Loading...</p></div>}>
+      <ShopContent />
+    </Suspense>
   )
 }
