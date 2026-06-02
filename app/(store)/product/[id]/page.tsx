@@ -1,43 +1,77 @@
-"use client"
-
-import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { notFound } from "next/navigation"
+import type { Metadata } from "next"
+import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { ProductDetailClient } from "./ProductDetailClient"
+import { ReviewSection } from "@/components/store/ReviewSection"
 
-export default function ProductPage() {
-  const params = useParams()
-  const [product, setProduct] = useState<any>(null)
-  const [error, setError] = useState(false)
+/* ─── Types ─────────────────────────────────────────────────────────────────── */
 
-  useEffect(() => {
-    fetch(`/api/products`)
-      .then((r) => r.json())
-      .then((products) => {
-        const found = products.find((p: any) => p.id === params.id)
-        if (found) {
-          setProduct(found)
-        } else {
-          setError(true)
-        }
-      })
-      .catch(() => setError(true))
-  }, [params.id])
+interface PageProps {
+  params: { id: string }
+}
 
-  if (error) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-heading font-bold">Product not found</h1>
-      </div>
-    )
-  }
+/* ─── Metadata ──────────────────────────────────────────────────────────────── */
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const supabase = createServiceClient()
+  const { data: product } = await supabase
+    .from("products")
+    .select("name, description, images")
+    .eq("id", params.id)
+    .single()
 
   if (!product) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
-        <p className="text-gray-500">Loading...</p>
-      </div>
-    )
+    return { title: "Product Not Found — DRIP" }
   }
 
-  return <ProductDetailClient product={product} />
+  return {
+    title: `${product.name} — DRIP`,
+    description: product.description ?? undefined,
+    openGraph: {
+      title: `${product.name} — DRIP`,
+      description: product.description ?? undefined,
+      images: Array.isArray(product.images) ? product.images : [],
+    },
+  }
+}
+
+/* ─── Page ──────────────────────────────────────────────────────────────────── */
+
+export default async function ProductPage({ params }: PageProps) {
+  const supabase = createClient()
+
+  // Fetch product server-side for SEO + performance
+  const { data: product, error } = await supabase
+    .from("products")
+    .select("*, brands(name, slug)")
+    .eq("id", params.id)
+    .single()
+
+  if (error || !product) {
+    notFound()
+  }
+
+  // Check if the current user is authenticated (non-blocking)
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // Prefetch reviews server-side using service client (no RLS restrictions)
+  const serviceSupabase = createServiceClient()
+  const { data: initialReviews } = await serviceSupabase
+    .from("reviews")
+    .select("*, profiles(full_name, avatar_url)")
+    .eq("product_id", params.id)
+    .order("created_at", { ascending: false })
+
+  return (
+    <>
+      <ProductDetailClient product={product} />
+      <ReviewSection
+        productId={params.id}
+        initialReviews={initialReviews ?? []}
+        isLoggedIn={!!user}
+      />
+    </>
+  )
 }
