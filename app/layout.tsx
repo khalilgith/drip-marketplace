@@ -1,16 +1,26 @@
 import type { Metadata } from "next"
-import { Playfair_Display, DM_Sans } from "next/font/google"
+import { Barlow_Condensed, Syne, DM_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "sonner"
+import { CustomCursor } from "@/components/store/Cursor"
 
-const playfair = Playfair_Display({
+const barlow = Barlow_Condensed({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-barlow",
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  style: ["normal", "italic"],
 })
 
-const dmSans = DM_Sans({
+const syne = Syne({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  variable: "--font-syne",
+})
+
+const dmMono = DM_Mono({
+  subsets: ["latin"],
+  variable: "--font-dm-mono",
+  weight: ["300", "400", "500"],
+  style: ["normal", "italic"],
 })
 
 export const metadata: Metadata = {
@@ -18,14 +28,14 @@ export const metadata: Metadata = {
   description: "Premium streetwear and footwear curated for those who refuse to blend in.",
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${playfair.variable} ${dmSans.variable} scroll-smooth`}>
+    <html
+      lang="en"
+      className={`${barlow.variable} ${syne.variable} ${dmMono.variable} scroll-smooth`}
+    >
       <body>
+        <CustomCursor />
         {children}
         <Toaster position="top-center" richColors />
       </body>
