@@ -3,6 +3,7 @@ import { Barlow_Condensed, Syne, DM_Mono } from "next/font/google"
 import "./globals.css"
 import { Toaster } from "sonner"
 import { CustomCursor } from "@/components/store/Cursor"
+import { Providers } from "@/components/Providers"
 
 const barlow = Barlow_Condensed({
   subsets: ["latin"],
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <CustomCursor />
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Toaster position="top-center" richColors />
       </body>
     </html>

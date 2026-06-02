@@ -1,9 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingBag, User, Search, X, Menu } from "lucide-react"
+import { ShoppingBag, User, Search, X, Menu, Heart } from "lucide-react"
 import { useState, useEffect } from "react"
 import { useCartStore } from "@/lib/store/cartStore"
+import { useWishlistStore } from "@/lib/store/wishlistStore"
 import { CartDrawer } from "./CartDrawer"
 import { useRouter } from "next/navigation"
 
@@ -20,7 +21,8 @@ export function Navbar() {
   const [searchOpen, setSearchOpen]   = useState(false)
   const [scrolled,   setScrolled]     = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
-  const itemCount = useCartStore((s) => s.itemCount())
+  const itemCount      = useCartStore((s) => s.itemCount())
+  const wishlistCount  = useWishlistStore((s) => s.count())
   const router    = useRouter()
 
   useEffect(() => {
@@ -101,6 +103,19 @@ export function Navbar() {
                   </span>
                 )}
               </button>
+
+              <Link
+                href="/wishlist"
+                className="relative p-2.5 text-cream/40 hover:text-cream transition-colors rounded-full hover:bg-cream/5"
+                aria-label="Wishlist"
+              >
+                <Heart className="h-[15px] w-[15px]" />
+                {wishlistCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 bg-gold text-navy text-[9px] font-bold font-mono rounded-none h-4 w-4 flex items-center justify-center leading-none">
+                    {wishlistCount}
+                  </span>
+                )}
+              </Link>
 
               <Link
                 href="/account"

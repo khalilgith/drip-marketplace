@@ -1,250 +1,745 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { formatPrice } from "@/lib/utils"
-import { useCartStore } from "@/lib/store/cartStore"
-import { toast } from "sonner"
-import { Minus, Plus, ShoppingBag, ChevronLeft, ChevronRight, Heart } from "lucide-react"
+import { useState, useRef, useCallback } from "react"
+import {
+  motion,
+  AnimatePresence,
+  useAnimation,
+  useMotionValue,
+  useTransform,
+  type Variants,
+} from "framer-motion"
 import Link from "next/link"
+import { ShoppingBag, Check, Minus, Plus, Ruler, Truck, RotateCcw, Shield } from "lucide-react"
+import { toast } from "sonner"
+import { useCartStore } from "@/lib/store/cartStore"
+import { useWishlistStore } from "@/lib/store/wishlistStore"
+import { formatPrice } from "@/lib/utils"
 
-interface ProductDetailClientProps {
-  product: any
+/* ─── Types ─────────────────────────────────────────────────────────────── */
+
+interface Product {
+  id: string
+  name: string
+  price: number
+  compare_price: number | null
+  description: string | null
+  images: string[]
+  sizes: string[]
+  colors: { name: string; hex: string }[]
+  brands: { name: string; slug: string } | null
 }
 
+interface ProductDetailClientProps {
+  product: Product
+}
+
+/* ─── Animation Variants ────────────────────────────────────────────────── */
+
+const containerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+}
+
+const slideFromLeft: Variants = {
+  hidden: { x: -60, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  },
+}
+
+const slideFromRight: Variants = {
+  hidden: { x: 60, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  },
+}
+
+const fadeUp: Variants = {
+  hidden: { y: 28, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  },
+}
+
+const staggerChildren: Variants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.07 } },
+}
+
+const shakeVariants: Variants = {
+  rest: { x: 0 },
+  shake: {
+    x: [0, -8, 8, -6, 6, -3, 3, 0],
+    transition: { duration: 0.45, ease: "easeInOut" },
+  },
+}
+
+/* ─── Heart SVG (animated fill) ─────────────────────────────────────────── */
+
+function HeartIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <motion.path
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+        animate={{
+          fill: filled ? "#C9A84C" : "transparent",
+          stroke: filled ? "#C9A84C" : "currentColor",
+        }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      />
+    </svg>
+  )
+}
+
+/* ─── Thumbnail ──────────────────────────────────────────────────────────── */
+
+function Thumbnail({
+  src,
+  alt,
+  active,
+  onClick,
+  index,
+}: {
+  src: string
+  alt: string
+  active: boolean
+  onClick: () => void
+  index: number
+}) {
+  return (
+    <motion.button
+      onClick={onClick}
+      className="relative w-14 h-[4.5rem] shrink-0 overflow-hidden"
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.15 + index * 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+      whileHover={{ scale: 1.04 }}
+      whileTap={{ scale: 0.96 }}
+    >
+      <img src={src} alt={alt} className="w-full h-full object-cover" />
+      <motion.div
+        className="absolute inset-0 border pointer-events-none"
+        animate={{
+          borderColor: active ? "#C9A84C" : "transparent",
+          opacity: active ? 1 : 0,
+        }}
+        transition={{ duration: 0.22 }}
+      />
+      {!active && (
+        <div className="absolute inset-0 bg-navy/40 pointer-events-none" />
+      )}
+    </motion.button>
+  )
+}
+
+/* ─── Complete the Look Card ─────────────────────────────────────────────── */
+
+function LookCard({ index }: { index: number }) {
+  const placeholders = [
+    {
+      name: "UTILITY CARGO PANT",
+      price: 285,
+      brand: "DRIP ESSENTIALS",
+      bg: "from-[#1a1a20] to-[#0f0f14]",
+    },
+    {
+      name: "HEAVY GAUGE KNIT",
+      price: 320,
+      brand: "ARCHIVAL",
+      bg: "from-[#14140f] to-[#1c1c14]",
+    },
+    {
+      name: "TECHNICAL SHELL",
+      price: 490,
+      brand: "CONSTRUCT",
+      bg: "from-[#0f1418] to-[#0a0f12]",
+    },
+  ]
+  const item = placeholders[index]
+  return (
+    <motion.div
+      className={`group relative bg-gradient-to-b ${item.bg} border border-white/[0.04] overflow-hidden`}
+      variants={fadeUp}
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+    >
+      <div className="aspect-[3/4] w-full relative overflow-hidden">
+        {/* Placeholder texture */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-20 h-20 border border-white/5 rotate-45 opacity-30" />
+          <div className="absolute w-32 h-32 border border-gold/10 rotate-12" />
+        </div>
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.08) 2px, rgba(255,255,255,0.08) 3px)",
+          }}
+        />
+        <motion.div
+          className="absolute inset-0 bg-navy/60 flex items-center justify-center opacity-0 group-hover:opacity-100"
+          transition={{ duration: 0.3 }}
+        >
+          <span
+            className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-cream border border-cream/30 px-4 py-2"
+          >
+            Quick Add
+          </span>
+        </motion.div>
+      </div>
+      <div className="p-4">
+        <p className="font-mono text-[9px] text-gold tracking-[0.15em] uppercase mb-1">
+          {item.brand}
+        </p>
+        <p className="font-heading text-sm text-cream tracking-wide uppercase leading-tight">
+          {item.name}
+        </p>
+        <p className="font-mono text-xs text-cream/50 mt-1">{formatPrice(item.price)}</p>
+      </div>
+    </motion.div>
+  )
+}
+
+/* ─── Main Component ─────────────────────────────────────────────────────── */
+
 export function ProductDetailClient({ product }: ProductDetailClientProps) {
+  const images = product.images?.length
+    ? product.images
+    : ["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&q=80"]
+
   const [selectedImage, setSelectedImage] = useState(0)
-  const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || "")
-  const [selectedColor, setSelectedColor] = useState(product.colors?.[0]?.name || "")
+  const [selectedSize, setSelectedSize] = useState<string>("")
+  const [selectedColor, setSelectedColor] = useState<string>(
+    product.colors?.[0]?.name ?? ""
+  )
   const [quantity, setQuantity] = useState(1)
-  const [zoomed, setZoomed] = useState(false)
+  const [cartState, setCartState] = useState<"idle" | "success">("idle")
+
   const addItem = useCartStore((s) => s.addItem)
+  const wishlistToggle = useWishlistStore((s) => s.toggle)
+  const isWishlisted = useWishlistStore((s) => s.has(product.id))
 
-  const images = product.images?.length ? product.images : ["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&q=80"]
+  const shakeControls = useAnimation()
+  const qtyRef = useRef<HTMLSpanElement>(null)
 
-  const handleAddToCart = () => {
+  /* ── quantity press feedback ── */
+  const qtyY = useMotionValue(0)
+  const qtyOpacity = useTransform(qtyY, [-6, 0, 6], [0.4, 1, 0.4])
+
+  const handleChangeImage = useCallback((idx: number) => {
+    setSelectedImage(idx)
+  }, [])
+
+  const handleAddToCart = useCallback(async () => {
     if (!selectedSize && product.sizes?.length > 0) {
-      toast.error("Please select a size")
+      await shakeControls.start("shake")
+      shakeControls.set("rest")
+      toast.error("Select a size first", {
+        position: "top-center",
+        style: {
+          background: "#08080C",
+          border: "1px solid rgba(237,233,223,0.1)",
+          color: "#EDE9DF",
+          fontFamily: "var(--font-syne), sans-serif",
+          fontSize: "11px",
+          letterSpacing: "0.1em",
+        },
+      })
       return
     }
+
     addItem({
       id: crypto.randomUUID(),
       product_id: product.id,
       name: product.name,
       price: product.price,
-      image: images[selectedImage] || images[0],
+      image: images[selectedImage] ?? images[0],
       size: selectedSize || "One Size",
       color: selectedColor || "Default",
       quantity,
     })
-    toast.success("Added to cart!", { position: "top-center" })
-  }
 
-  const nextImage = () => setSelectedImage((s) => (s + 1) % images.length)
-  const prevImage = () => setSelectedImage((s) => (s - 1 + images.length) % images.length)
+    setCartState("success")
+    setTimeout(() => setCartState("idle"), 2200)
+
+    toast.success("Added to bag", {
+      position: "top-center",
+      style: {
+        background: "#08080C",
+        border: "1px solid rgba(201,168,76,0.35)",
+        color: "#C9A84C",
+        fontFamily: "var(--font-syne), sans-serif",
+        fontSize: "11px",
+        letterSpacing: "0.1em",
+      },
+    })
+  }, [selectedSize, selectedColor, quantity, selectedImage, product, images, addItem, shakeControls])
+
+  const handleWishlist = useCallback(() => {
+    wishlistToggle({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: images[0],
+      brand: product.brands?.name,
+    })
+  }, [wishlistToggle, product, images])
+
+  const discount = product.compare_price
+    ? Math.round((1 - product.price / product.compare_price) * 100)
+    : null
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16">
-        {/* Image Gallery */}
-        <div>
-          <div
-            className="aspect-[4/5] bg-gray-50 overflow-hidden relative group cursor-crosshair"
-            onMouseEnter={() => setZoomed(true)}
-            onMouseLeave={() => setZoomed(false)}
+    <div className="bg-navy min-h-screen">
+      {/* ── Main product section ── */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-10 lg:py-16">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-14 xl:gap-20">
+
+          {/* ═══════════════════════════════════════════════════════════
+              LEFT: Image Gallery
+          ═══════════════════════════════════════════════════════════ */}
+          <motion.div
+            className="lg:w-[55%] xl:w-[58%] flex gap-3 sm:gap-4"
+            variants={slideFromLeft}
+            initial="hidden"
+            animate="visible"
           >
-            <img
-              src={images[selectedImage]}
-              alt={product.name}
-              className={`w-full h-full object-cover transition-transform duration-700 ${
-                zoomed ? "scale-150" : "scale-100"
-              }`}
-              style={{ transformOrigin: "center center" }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+            {/* Vertical thumbnail strip */}
             {images.length > 1 && (
-              <>
-                <button
-                  onClick={prevImage}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={nextImage}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </>
-            )}
-          </div>
-          {images.length > 1 && (
-            <div className="flex gap-3 mt-4">
-              {images.map((img: string, i: number) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedImage(i)}
-                  className={`w-20 h-24 bg-gray-50 overflow-hidden border-2 transition-all ${
-                    i === selectedImage ? "border-gold opacity-100" : "border-transparent opacity-60 hover:opacity-100"
-                  }`}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Product Info */}
-        <div className="flex flex-col">
-          {product.brands && (
-            <Link
-              href={`/brand/${product.brands.slug}`}
-              className="text-xs text-gold uppercase tracking-[0.15em] font-semibold hover:underline mb-2"
-            >
-              {product.brands.name}
-            </Link>
-          )}
-          <h1 className="text-3xl lg:text-4xl font-heading font-bold mb-4 leading-tight">
-            {product.name}
-          </h1>
-          <div className="flex items-center gap-3 mb-8">
-            <span className="text-2xl font-bold">{formatPrice(product.price)}</span>
-            {product.compare_price && (
-              <span className="text-base text-gray-400 line-through">
-                {formatPrice(product.compare_price)}
-              </span>
-            )}
-          </div>
-          <p className="text-navy/60 leading-relaxed mb-10">
-            {product.description || "No description available."}
-          </p>
-
-          {product.sizes?.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.15em] mb-4">
-                Size: <span className="text-gold ml-1">{selectedSize}</span>
-              </h3>
-              <div className="flex flex-wrap gap-2">
-                {product.sizes.map((size: string) => (
-                  <button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className={`min-w-[3rem] px-4 py-3 border text-sm font-medium transition-all ${
-                      selectedSize === size
-                        ? "border-gold bg-gold text-white"
-                        : "border-gray-200 text-navy hover:border-gold/50 hover:bg-cream"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {product.colors?.length > 0 && (
-            <div className="mb-8">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.15em] mb-4">
-                Color: <span className="text-gold ml-1">{selectedColor}</span>
-              </h3>
-              <div className="flex gap-3">
-                {product.colors.map((color: { name: string; hex: string }) => (
-                  <button
-                    key={color.name}
-                    onClick={() => setSelectedColor(color.name)}
-                    className={`w-9 h-9 rounded-full border-2 transition-all ${
-                      selectedColor === color.name
-                        ? "border-gold scale-110 shadow-lg shadow-gold/20"
-                        : "border-gray-200 hover:border-gray-400"
-                    }`}
-                    style={{ backgroundColor: color.hex }}
-                    title={color.name}
+              <div className="flex flex-col gap-2.5 pt-1">
+                {images.map((img, i) => (
+                  <Thumbnail
+                    key={i}
+                    src={img}
+                    alt={`${product.name} view ${i + 1}`}
+                    active={i === selectedImage}
+                    onClick={() => handleChangeImage(i)}
+                    index={i}
                   />
                 ))}
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="flex items-center gap-4 mb-8">
-            <div className="flex items-center border border-gray-200">
-              <button
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="p-3.5 hover:bg-cream transition-colors"
+            {/* Main image */}
+            <div className="flex-1 relative overflow-hidden bg-[#0e0e12]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={selectedImage}
+                  className="absolute inset-0"
+                  initial={{ opacity: 0, scale: 1.04 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                >
+                  <img
+                    src={images[selectedImage]}
+                    alt={product.name}
+                    className="w-full h-full object-cover"
+                  />
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Aspect ratio holder — tall fashion ratio */}
+              <div className="aspect-[3/4] lg:aspect-auto lg:min-h-[680px] xl:min-h-[780px] w-full" />
+
+              {/* Discount badge */}
+              {discount && (
+                <motion.div
+                  className="absolute top-4 left-4 bg-volt text-navy font-mono text-[9px] font-bold tracking-[0.15em] uppercase px-2.5 py-1.5"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.6, duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                >
+                  -{discount}%
+                </motion.div>
+              )}
+
+              {/* Image counter */}
+              {images.length > 1 && (
+                <div className="absolute bottom-4 right-4 font-mono text-[9px] text-cream/30 tracking-widest">
+                  {String(selectedImage + 1).padStart(2, "0")}/{String(images.length).padStart(2, "0")}
+                </div>
+              )}
+
+              {/* Subtle scanline overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none opacity-[0.025]"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(237,233,223,0.4) 3px, rgba(237,233,223,0.4) 4px)",
+                }}
+              />
+            </div>
+          </motion.div>
+
+          {/* ═══════════════════════════════════════════════════════════
+              RIGHT: Product Details
+          ═══════════════════════════════════════════════════════════ */}
+          <motion.div
+            className="lg:w-[45%] xl:w-[42%] flex flex-col"
+            variants={slideFromRight}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div
+              className="flex flex-col gap-0"
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              {/* Brand */}
+              {product.brands && (
+                <motion.div variants={fadeUp}>
+                  <Link
+                    href={`/brand/${product.brands.slug}`}
+                    className="inline-block font-mono text-[10px] text-gold tracking-[0.22em] uppercase mb-3 hover:text-gold/70 transition-colors"
+                  >
+                    {product.brands.name}
+                  </Link>
+                </motion.div>
+              )}
+
+              {/* Product name */}
+              <motion.h1
+                variants={fadeUp}
+                className="font-heading text-4xl sm:text-5xl lg:text-[3.2rem] xl:text-[3.8rem] leading-[0.92] uppercase tracking-tight text-cream mb-6"
               >
-                <Minus className="h-3.5 w-3.5" />
-              </button>
-              <span className="px-6 text-sm font-medium min-w-[3rem] text-center">{quantity}</span>
-              <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="p-3.5 hover:bg-cream transition-colors"
+                {product.name}
+              </motion.h1>
+
+              {/* Price row */}
+              <motion.div variants={fadeUp} className="flex items-baseline gap-4 mb-8">
+                <span className="font-mono text-2xl text-cream tracking-tight">
+                  {formatPrice(product.price)}
+                </span>
+                {product.compare_price && (
+                  <span className="font-mono text-base text-cream/30 line-through tracking-tight">
+                    {formatPrice(product.compare_price)}
+                  </span>
+                )}
+              </motion.div>
+
+              {/* Thin divider */}
+              <motion.div
+                variants={fadeUp}
+                className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent mb-8"
+              />
+
+              {/* Color Selector */}
+              {product.colors?.length > 0 && (
+                <motion.div variants={fadeUp} className="mb-8">
+                  <p className="font-mono text-[9px] text-cream/40 tracking-[0.2em] uppercase mb-4">
+                    Color —{" "}
+                    <span className="text-cream/80">{selectedColor}</span>
+                  </p>
+                  <motion.div className="flex gap-3" variants={staggerChildren}>
+                    {product.colors.map((color) => (
+                      <motion.button
+                        key={color.name}
+                        onClick={() => setSelectedColor(color.name)}
+                        className="relative w-8 h-8 rounded-full shrink-0"
+                        title={color.name}
+                        variants={fadeUp}
+                        whileHover={{ scale: 1.12 }}
+                        whileTap={{ scale: 0.9 }}
+                      >
+                        <span
+                          className="absolute inset-0 rounded-full"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <AnimatePresence>
+                          {selectedColor === color.name && (
+                            <motion.span
+                              key="ring"
+                              className="absolute -inset-[3px] rounded-full border border-gold"
+                              initial={{ opacity: 0, scale: 0.7 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.7 }}
+                              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                            />
+                          )}
+                        </AnimatePresence>
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {/* Size Selector */}
+              {product.sizes?.length > 0 && (
+                <motion.div variants={fadeUp} className="mb-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="font-mono text-[9px] text-cream/40 tracking-[0.2em] uppercase">
+                      Size —{" "}
+                      <span className={selectedSize ? "text-cream/80" : "text-cream/25"}>
+                        {selectedSize || "Select"}
+                      </span>
+                    </p>
+                    <button className="flex items-center gap-1.5 font-mono text-[9px] text-cream/30 tracking-[0.12em] uppercase hover:text-gold transition-colors">
+                      <Ruler size={10} />
+                      Size Guide
+                    </button>
+                  </div>
+                  <motion.div className="flex flex-wrap gap-2" variants={staggerChildren}>
+                    {product.sizes.map((size) => (
+                      <motion.button
+                        key={size}
+                        onClick={() => setSelectedSize(size)}
+                        className="relative overflow-hidden"
+                        variants={fadeUp}
+                        animate={
+                          selectedSize === size
+                            ? { scale: 1.05 }
+                            : { scale: 1 }
+                        }
+                        whileHover={{ scale: selectedSize === size ? 1.05 : 1.04 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                      >
+                        <span
+                          className={[
+                            "relative z-10 flex items-center justify-center min-w-[3rem] px-4 py-2.5",
+                            "font-mono text-[10px] tracking-[0.12em] uppercase transition-colors duration-200",
+                            selectedSize === size
+                              ? "text-navy"
+                              : "text-cream/50 hover:text-cream/80",
+                          ].join(" ")}
+                        >
+                          {size}
+                        </span>
+                        {/* Selected fill */}
+                        <AnimatePresence>
+                          {selectedSize === size && (
+                            <motion.span
+                              key="fill"
+                              className="absolute inset-0 bg-gold z-0"
+                              initial={{ scaleX: 0 }}
+                              animate={{ scaleX: 1 }}
+                              exit={{ scaleX: 0, transition: { duration: 0.18 } }}
+                              style={{ transformOrigin: "left" }}
+                              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                            />
+                          )}
+                        </AnimatePresence>
+                        {/* Border */}
+                        <span
+                          className={[
+                            "absolute inset-0 border transition-colors duration-200",
+                            selectedSize === size
+                              ? "border-gold"
+                              : "border-white/10 hover:border-white/25",
+                          ].join(" ")}
+                        />
+                      </motion.button>
+                    ))}
+                  </motion.div>
+                </motion.div>
+              )}
+
+              {/* Quantity selector */}
+              <motion.div variants={fadeUp} className="mb-8">
+                <p className="font-mono text-[9px] text-cream/40 tracking-[0.2em] uppercase mb-4">
+                  Quantity
+                </p>
+                <div className="inline-flex items-center border border-white/10">
+                  <motion.button
+                    className="w-10 h-10 flex items-center justify-center text-cream/50 hover:text-cream hover:bg-white/5 transition-colors"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    whileTap={{ scale: 0.85 }}
+                  >
+                    <Minus size={12} />
+                  </motion.button>
+                  <motion.span
+                    ref={qtyRef}
+                    className="w-12 text-center font-mono text-sm text-cream"
+                    style={{ opacity: qtyOpacity }}
+                    key={quantity}
+                    initial={{ y: -8, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                  >
+                    {quantity}
+                  </motion.span>
+                  <motion.button
+                    className="w-10 h-10 flex items-center justify-center text-cream/50 hover:text-cream hover:bg-white/5 transition-colors"
+                    onClick={() => setQuantity((q) => q + 1)}
+                    whileTap={{ scale: 0.85 }}
+                  >
+                    <Plus size={12} />
+                  </motion.button>
+                </div>
+              </motion.div>
+
+              {/* CTA buttons */}
+              <motion.div variants={fadeUp} className="flex gap-3 mb-8">
+                {/* Add to Cart */}
+                <motion.button
+                  className="btn-drip flex-1 relative overflow-hidden"
+                  variants={shakeVariants}
+                  animate={shakeControls}
+                  initial="rest"
+                  onClick={handleAddToCart}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <AnimatePresence mode="wait">
+                    {cartState === "success" ? (
+                      <motion.span
+                        key="success"
+                        className="flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] uppercase"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                      >
+                        <Check size={14} strokeWidth={2.5} />
+                        Added to Bag
+                      </motion.span>
+                    ) : (
+                      <motion.span
+                        key="idle"
+                        className="flex items-center gap-2 text-[10px] font-bold tracking-[0.18em] uppercase"
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -12 }}
+                        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                      >
+                        <ShoppingBag size={14} />
+                        Add to Bag — {formatPrice(product.price * quantity)}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </motion.button>
+
+                {/* Wishlist */}
+                <motion.button
+                  className={[
+                    "w-14 h-14 shrink-0 flex items-center justify-center border transition-colors duration-200",
+                    isWishlisted
+                      ? "border-gold/50 text-gold bg-gold/5"
+                      : "border-white/10 text-cream/40 hover:border-white/25 hover:text-cream/70",
+                  ].join(" ")}
+                  onClick={handleWishlist}
+                  whileTap={{ scale: 0.88 }}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <motion.span
+                    animate={isWishlisted ? { scale: [1, 1.35, 1] } : { scale: 1 }}
+                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
+                  >
+                    <HeartIcon filled={isWishlisted} />
+                  </motion.span>
+                </motion.button>
+              </motion.div>
+
+              {/* Description */}
+              {product.description && (
+                <motion.div variants={fadeUp} className="mb-8">
+                  <div className="h-px bg-gradient-to-r from-white/10 via-white/5 to-transparent mb-6" />
+                  <p className="font-body text-sm text-cream/40 leading-[1.75] tracking-wide">
+                    {product.description}
+                  </p>
+                </motion.div>
+              )}
+
+              {/* Trust strip */}
+              <motion.div
+                variants={fadeUp}
+                className="border-t border-white/[0.06] pt-6"
               >
-                <Plus className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex gap-3">
-            <Button size="lg" className="flex-1 btn-shimmer group" onClick={handleAddToCart}>
-              <ShoppingBag className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-              Add to Cart — {formatPrice(product.price * quantity)}
-            </Button>
-            <Button variant="outline" size="icon" className="w-14 h-14 shrink-0">
-              <Heart className="h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mt-10 pt-8 border-t border-gray-100">
-            <div className="grid grid-cols-3 gap-6 text-center text-xs text-navy/50">
-              <div>
-                <p className="font-semibold text-navy mb-1">Free Shipping</p>
-                <p>On orders over $200</p>
-              </div>
-              <div>
-                <p className="font-semibold text-navy mb-1">Easy Returns</p>
-                <p>30-day return policy</p>
-              </div>
-              <div>
-                <p className="font-semibold text-navy mb-1">Secure Checkout</p>
-                <p>SSL encrypted</p>
-              </div>
-            </div>
-          </div>
+                <div className="grid grid-cols-3 gap-4">
+                  {[
+                    { icon: Truck, label: "Free Shipping", sub: "Orders over $200" },
+                    { icon: RotateCcw, label: "30-Day Returns", sub: "Easy & free" },
+                    { icon: Shield, label: "Secure Checkout", sub: "SSL encrypted" },
+                  ].map(({ icon: Icon, label, sub }, i) => (
+                    <motion.div
+                      key={label}
+                      className="flex flex-col items-center text-center gap-2"
+                      initial={{ opacity: 0, y: 14 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        delay: 0.9 + i * 0.08,
+                        duration: 0.5,
+                        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
+                      }}
+                    >
+                      <Icon size={14} className="text-gold/60" />
+                      <span className="font-mono text-[8px] text-cream/50 tracking-[0.1em] uppercase leading-tight">
+                        {label}
+                        <br />
+                        <span className="text-cream/25">{sub}</span>
+                      </span>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
 
-      {/* Reviews */}
-      {product.reviews?.length > 0 && (
-        <div className="mt-20 pt-12 border-t border-gray-100">
-          <h3 className="text-2xl font-heading font-bold mb-8">Customer Reviews</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {product.reviews.map((review: any) => (
-              <div key={review.id} className="bg-white border border-gray-100 p-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-full bg-navy/5 flex items-center justify-center">
-                    <span className="text-xs font-bold text-navy">
-                      {(review.profiles?.full_name || "A").charAt(0)}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium">{review.profiles?.full_name || "Anonymous"}</span>
-                </div>
-                <div className="flex gap-0.5 mb-3">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <span
-                      key={i}
-                      className={`text-sm ${i < review.rating ? "text-gold" : "text-gray-200"}`}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-                <p className="text-sm text-navy/60 leading-relaxed">{review.comment}</p>
-              </div>
-            ))}
+      {/* ═══════════════════════════════════════════════════════════════════
+          BELOW THE FOLD: Complete the Look
+      ═══════════════════════════════════════════════════════════════════ */}
+      <motion.section
+        className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 pb-24 mt-10"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, margin: "-80px" }}
+        variants={containerVariants}
+      >
+        {/* Section header */}
+        <motion.div
+          variants={fadeUp}
+          className="flex items-center justify-between mb-10"
+        >
+          <div className="flex items-center gap-6">
+            <div className="h-px w-8 bg-gold/40" />
+            <span className="font-mono text-[9px] text-gold tracking-[0.3em] uppercase">
+              Complete the Look
+            </span>
           </div>
-        </div>
-      )}
+          <motion.div
+            className="h-px bg-gradient-to-l from-transparent via-white/8 to-transparent flex-1 mx-8"
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number], delay: 0.3 }}
+            style={{ transformOrigin: "right" }}
+          />
+          <button className="font-mono text-[9px] text-cream/25 tracking-[0.2em] uppercase hover:text-cream/50 transition-colors">
+            View All
+          </button>
+        </motion.div>
+
+        {/* Look cards grid */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+          variants={staggerChildren}
+        >
+          {[0, 1, 2].map((i) => (
+            <LookCard key={i} index={i} />
+          ))}
+        </motion.div>
+      </motion.section>
     </div>
   )
 }

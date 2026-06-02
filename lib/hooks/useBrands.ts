@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 
-interface Brand {
+export interface Brand {
   id: string
   name: string
   slug: string
@@ -14,28 +14,20 @@ interface Brand {
   featured: boolean
 }
 
+async function fetchBrands(featuredOnly: boolean): Promise<Brand[]> {
+  const supabase = createClient()
+  let query = supabase.from("brands").select("*").eq("approved", true).order("name")
+  if (featuredOnly) query = query.eq("featured", true)
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return (data as Brand[]) ?? []
+}
+
 export function useBrands(featuredOnly = false) {
-  const [brands, setBrands] = useState<Brand[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    let query = supabase
-      .from("brands")
-      .select("*")
-      .eq("approved", true)
-      .order("name")
-
-    if (featuredOnly) {
-      query = query.eq("featured", true)
-    }
-
-    query.then(({ data }) => {
-      setBrands((data as Brand[]) || [])
-      setLoading(false)
-    })
-  }, [featuredOnly])
-
-  return { brands, loading }
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["brands", { featuredOnly }],
+    queryFn: () => fetchBrands(featuredOnly),
+    staleTime: 60_000,
+  })
+  return { brands: data ?? [], loading: isLoading, error }
 }

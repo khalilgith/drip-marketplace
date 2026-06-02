@@ -1,29 +1,28 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
+import { motion } from "framer-motion"
 import { HeroBanner } from "@/components/store/HeroBanner"
 import { ProductGrid } from "@/components/store/ProductGrid"
-import { BrandCard } from "@/components/store/BrandCard"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
 import Link from "next/link"
+import { useFeaturedProducts } from "@/lib/hooks/useProducts"
+import { useBrands } from "@/lib/hooks/useBrands"
+
+const fadeUp = {
+  hidden:  { opacity: 0, y: 32 },
+  visible: (i: number) => ({
+    opacity: 1, y: 0,
+    transition: { duration: 0.7, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
+  }),
+}
 
 export default function HomePage() {
-  const [products, setProducts] = useState<any[]>([])
-  const [brands,   setBrands]   = useState<any[]>([])
+  const { products, loading: productsLoading } = useFeaturedProducts()
+  const { brands }                              = useBrands(true)
   const sectionRef = useRef<HTMLElement>(null)
 
-  useEffect(() => {
-    fetch("/api/products")
-      .then((r) => r.json())
-      .then((data) => setProducts(data?.filter((p: any) => p.featured) || []))
-      .catch(() => {})
-
-    fetch("/api/brands")
-      .then((r) => r.json())
-      .then((data) => setBrands(data?.filter((b: any) => b.featured) || []))
-      .catch(() => {})
-  }, [])
-
+  // Scroll reveal for non-Framer elements
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("visible")),
@@ -37,33 +36,57 @@ export default function HomePage() {
     <>
       <HeroBanner />
 
-      {/* ── Featured Products ──────────────────────────────────────── */}
+      {/* ── Featured Products ─────────────────────────────────── */}
       <section ref={sectionRef} className="bg-navy py-24 lg:py-32">
         <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
 
-          {/* Section header */}
           <div className="flex items-end justify-between mb-14 lg:mb-16">
             <div>
-              <p className="section-label mb-3 reveal">Curated Selection</p>
-              <h2 className="font-heading font-black text-[36px] lg:text-[52px] xl:text-[60px] uppercase leading-[0.9] tracking-tight text-cream reveal reveal-delay-1">
+              <motion.p
+                className="section-label mb-3"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
+              >
+                Curated Selection
+              </motion.p>
+              <motion.h2
+                className="font-heading font-black text-[36px] lg:text-[52px] xl:text-[60px] uppercase leading-[0.9] tracking-tight text-cream"
+                initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
+              >
                 Featured<br />Products
-              </h2>
+              </motion.h2>
             </div>
-            <Link
-              href="/shop"
-              className="hidden md:flex items-center gap-1.5 font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-cream/35 hover:text-gold transition-colors group reveal reveal-delay-2"
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={fadeUp}>
+              <Link
+                href="/shop"
+                className="hidden md:flex items-center gap-1.5 font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-cream/35 hover:text-gold transition-colors group"
+              >
+                View All
+                <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+              </Link>
+            </motion.div>
+          </div>
+
+          {productsLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="space-y-3">
+                  <div className="aspect-[3/4] bg-cream/5 animate-pulse" />
+                  <div className="h-2.5 w-16 bg-cream/5 animate-pulse" />
+                  <div className="h-3 w-32 bg-cream/5 animate-pulse" />
+                  <div className="h-2.5 w-20 bg-cream/5 animate-pulse" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
+              viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
             >
-              View All
-              <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-            </Link>
-          </div>
+              <ProductGrid products={products} />
+            </motion.div>
+          )}
 
-          <div className="reveal reveal-delay-2">
-            <ProductGrid products={products} />
-          </div>
-
-          {/* Mobile view-all */}
-          <div className="mt-10 flex justify-center md:hidden reveal reveal-delay-3">
+          <div className="mt-10 flex justify-center md:hidden">
             <Link href="/shop" className="btn-ghost">
               <span>View All Products</span>
               <ArrowUpRight className="h-3 w-3" />
@@ -72,16 +95,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Brands Marquee ─────────────────────────────────────────── */}
+      {/* ── Brands Marquee ─────────────────────────────────────── */}
       {brands.length > 0 && (
         <section className="bg-navy border-t border-cream/5 py-20 overflow-hidden">
-          <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 mb-12">
-            <div className="text-center">
-              <p className="section-label mb-3 reveal">Featured Brands</p>
-              <h2 className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream reveal reveal-delay-1">
-                The Labels Defining Streetwear
-              </h2>
-            </div>
+          <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 mb-12 text-center">
+            <motion.p
+              className="section-label mb-3"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
+            >
+              Featured Brands
+            </motion.p>
+            <motion.h2
+              className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
+            >
+              The Labels Defining Streetwear
+            </motion.h2>
           </div>
           <div className="marquee">
             <div className="marquee-inner gap-10 px-6">
@@ -106,9 +135,8 @@ export default function HomePage() {
         </section>
       )}
 
-      {/* ── Editorial CTA ──────────────────────────────────────────── */}
+      {/* ── Editorial CTA ───────────────────────────────────────── */}
       <section className="bg-cream relative overflow-hidden py-24 lg:py-32">
-        {/* Background number */}
         <span
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 font-heading font-black leading-none select-none pointer-events-none text-navy/5"
           style={{ fontSize: "clamp(120px, 18vw, 240px)" }}
@@ -119,18 +147,32 @@ export default function HomePage() {
 
         <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
           <div className="max-w-2xl">
-            <p className="section-label text-gold mb-4 reveal">Join the Movement</p>
-            <h2 className="font-heading font-black text-[42px] sm:text-[56px] lg:text-[72px] xl:text-[88px] uppercase leading-[0.88] tracking-tight text-navy mb-6 reveal reveal-delay-1">
+            <motion.p
+              className="section-label text-gold mb-4"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
+            >
+              Join the Movement
+            </motion.p>
+            <motion.h2
+              className="font-heading font-black text-[42px] sm:text-[56px] lg:text-[72px] xl:text-[88px] uppercase leading-[0.88] tracking-tight text-navy mb-6"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
+            >
               Ready to<br />
               <span style={{ WebkitTextStroke: "2px #08080C", color: "transparent" }}>
                 Elevate?
               </span>
-            </h2>
-            <p className="font-body text-[13px] text-navy/45 max-w-sm leading-relaxed mb-10 reveal reveal-delay-2">
+            </motion.h2>
+            <motion.p
+              className="font-body text-[13px] text-navy/45 max-w-sm leading-relaxed mb-10"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={fadeUp}
+            >
               Discover premium streetwear from the world&apos;s most sought-after brands.
               Limited drops. Zero compromises.
-            </p>
-            <div className="flex flex-wrap items-center gap-4 reveal reveal-delay-3">
+            </motion.p>
+            <motion.div
+              className="flex flex-wrap items-center gap-4"
+              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={3} variants={fadeUp}
+            >
               <Link href="/shop" className="btn-drip">
                 <span>Shop the Collection</span>
                 <ArrowRight className="h-3 w-3" />
@@ -142,7 +184,7 @@ export default function HomePage() {
                 Explore Women
                 <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
               </Link>
-            </div>
+            </motion.div>
           </div>
         </div>
       </section>

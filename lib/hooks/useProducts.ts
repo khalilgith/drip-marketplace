@@ -1,11 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
 import { createClient } from "@/lib/supabase/client"
 
-interface Product {
+export interface Product {
   id: string
-  brand_id: string
+  brand_id: string | null
   name: string
   description: string | null
   price: number
@@ -20,41 +20,39 @@ interface Product {
   brands: { name: string; slug: string } | null
 }
 
-export function useProducts(filters?: {
+interface ProductFilters {
   category?: string
   brand_id?: string
   search?: string
   featured?: boolean
-}) {
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
+}
 
-  useEffect(() => {
-    const supabase = createClient()
+async function fetchProducts(filters?: ProductFilters): Promise<Product[]> {
+  const supabase = createClient()
+  let query = supabase
+    .from("products")
+    .select("*, brands(name, slug)")
+    .order("created_at", { ascending: false })
 
-    let query = supabase
-      .from("products")
-      .select("*, brands(name, slug)")
-      .order("created_at", { ascending: false })
+  if (filters?.category) query = query.eq("category", filters.category)
+  if (filters?.brand_id)  query = query.eq("brand_id",  filters.brand_id)
+  if (filters?.featured)  query = query.eq("featured",  true)
+  if (filters?.search)    query = query.ilike("name", `%${filters.search}%`)
 
-    if (filters?.category) {
-      query = query.eq("category", filters.category)
-    }
-    if (filters?.brand_id) {
-      query = query.eq("brand_id", filters.brand_id)
-    }
-    if (filters?.featured) {
-      query = query.eq("featured", true)
-    }
-    if (filters?.search) {
-      query = query.ilike("name", `%${filters.search}%`)
-    }
+  const { data, error } = await query
+  if (error) throw new Error(error.message)
+  return (data as Product[]) ?? []
+}
 
-    query.then(({ data }) => {
-      setProducts((data as Product[]) || [])
-      setLoading(false)
-    })
-  }, [filters?.category, filters?.brand_id, filters?.search, filters?.featured])
+export function useProducts(filters?: ProductFilters) {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["products", filters],
+    queryFn: () => fetchProducts(filters),
+    staleTime: 30_000,
+  })
+  return { products: data ?? [], loading: isLoading, error }
+}
 
-  return { products, loading }
+export function useFeaturedProducts() {
+  return useProducts({ featured: true })
 }
