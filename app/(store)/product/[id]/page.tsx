@@ -1,46 +1,15 @@
 import { notFound } from "next/navigation"
-import type { Metadata } from "next"
 import { createClient, createServiceClient } from "@/lib/supabase/server"
 import { ProductDetailClient } from "./ProductDetailClient"
 import { ReviewSection } from "@/components/store/ReviewSection"
 
-/* ─── Types ─────────────────────────────────────────────────────────────────── */
-
-interface PageProps {
+export default async function ProductPage({
+  params,
+}: {
   params: { id: string }
-}
-
-/* ─── Metadata ──────────────────────────────────────────────────────────────── */
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const supabase = createServiceClient()
-  const { data: product } = await supabase
-    .from("products")
-    .select("name, description, images")
-    .eq("id", params.id)
-    .single()
-
-  if (!product) {
-    return { title: "Product Not Found — DRIP" }
-  }
-
-  return {
-    title: `${product.name} — DRIP`,
-    description: product.description ?? undefined,
-    openGraph: {
-      title: `${product.name} — DRIP`,
-      description: product.description ?? undefined,
-      images: Array.isArray(product.images) ? product.images : [],
-    },
-  }
-}
-
-/* ─── Page ──────────────────────────────────────────────────────────────────── */
-
-export default async function ProductPage({ params }: PageProps) {
+}) {
   const supabase = createClient()
 
-  // Fetch product server-side for SEO + performance
   const { data: product, error } = await supabase
     .from("products")
     .select("*, brands(name, slug)")
@@ -51,14 +20,10 @@ export default async function ProductPage({ params }: PageProps) {
     notFound()
   }
 
-  // Check if the current user is authenticated (non-blocking)
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Prefetch reviews server-side using service client (no RLS restrictions)
-  const serviceSupabase = createServiceClient()
-  const { data: initialReviews } = await serviceSupabase
+  const svc = createServiceClient()
+  const { data: initialReviews } = await svc
     .from("reviews")
     .select("*, profiles(full_name, avatar_url)")
     .eq("product_id", params.id)
@@ -74,4 +39,27 @@ export default async function ProductPage({ params }: PageProps) {
       />
     </>
   )
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string }
+}) {
+  const supabase = createServiceClient()
+  const { data } = await supabase
+    .from("products")
+    .select("name, description, images")
+    .eq("id", params.id)
+    .single()
+
+  if (!data) return { title: "Product Not Found" }
+
+  return {
+    title: data.name,
+    description: data.description ?? undefined,
+    openGraph: {
+      images: Array.isArray(data.images) ? data.images : [],
+    },
+  }
 }
