@@ -155,53 +155,45 @@ function Thumbnail({
 function LookCard({ index }: { index: number }) {
   const placeholders = [
     {
-      name: "UTILITY CARGO PANT",
+      name: "Utility Cargo Pant",
       price: 285,
-      brand: "DRIP ESSENTIALS",
-      bg: "from-[#1a1a20] to-[#0f0f14]",
+      brand: "Carhartt WIP",
+      img: "https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=600&q=80",
     },
     {
-      name: "HEAVY GAUGE KNIT",
+      name: "Heavy Gauge Knit",
       price: 320,
-      brand: "ARCHIVAL",
-      bg: "from-[#14140f] to-[#1c1c14]",
+      brand: "Stone Island",
+      img: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=600&q=80",
     },
     {
-      name: "TECHNICAL SHELL",
+      name: "Technical Shell Jacket",
       price: 490,
-      brand: "CONSTRUCT",
-      bg: "from-[#0f1418] to-[#0a0f12]",
+      brand: "Nike",
+      img: "https://images.unsplash.com/photo-1591047139829-d91aecb6caea?w=600&q=80",
     },
   ]
   const item = placeholders[index]
   return (
     <motion.div
-      className={`group relative bg-gradient-to-b ${item.bg} border border-white/[0.04] overflow-hidden`}
+      className="group relative bg-cream/5 border border-cream/10 overflow-hidden"
       variants={fadeUp}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] }}
     >
-      <div className="aspect-[3/4] w-full relative overflow-hidden">
-        {/* Placeholder texture */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-20 h-20 border border-white/5 rotate-45 opacity-30" />
-          <div className="absolute w-32 h-32 border border-gold/10 rotate-12" />
-        </div>
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.08) 2px, rgba(255,255,255,0.08) 3px)",
-          }}
+      <div className="aspect-[3/4] w-full relative overflow-hidden bg-cream/5">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.img}
+          alt={item.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
         />
         <motion.div
           className="absolute inset-0 bg-navy/60 flex items-center justify-center opacity-0 group-hover:opacity-100"
           transition={{ duration: 0.3 }}
         >
-          <span
-            className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-cream border border-cream/30 px-4 py-2"
-          >
-            Quick Add
+          <span className="text-[9px] font-body font-bold tracking-[0.2em] uppercase text-cream border border-cream/30 px-4 py-2">
+            View Item
           </span>
         </motion.div>
       </div>

@@ -463,9 +463,11 @@ export function ReviewSection({
     setNewReviewAdded(true)
   }, [])
 
+  const isEmpty = !isLoading && reviews.length === 0
+
   return (
     <section className="bg-navy border-t border-white/[0.06]">
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 py-16 lg:py-24">
+      <div className={`max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 ${isEmpty ? "py-10 lg:py-14" : "py-16 lg:py-24"}`}>
 
         {/* ── Section header ── */}
         <motion.div
@@ -494,7 +496,7 @@ export function ReviewSection({
           )}
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 lg:gap-20">
+        <div className={isEmpty ? "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6" : "grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-12 lg:gap-20"}>
 
           {/* ══════════════════════════════════════════
               LEFT COLUMN: Rating Summary
@@ -546,21 +548,19 @@ export function ReviewSection({
                 </div>
               </>
             ) : (
-              <div className="text-center py-8 lg:text-left">
-                <div
-                  className="font-mono text-cream/5 leading-none mb-2 select-none"
-                  style={{ fontSize: "clamp(4rem, 8vw, 6rem)" }}
-                >
-                  —
-                </div>
-                <p className="font-mono text-[9px] text-cream/25 tracking-[0.2em]">
-                  NO REVIEWS YET
-                </p>
+              <div className={isEmpty ? "flex items-center gap-3" : "py-2"}>
+                <span className="font-mono text-[9px] text-cream/25 tracking-[0.2em] uppercase">
+                  No reviews yet
+                </span>
+                <span className="w-px h-3 bg-cream/10" />
+                <span className="font-mono text-[9px] text-cream/15 tracking-[0.15em] uppercase">
+                  Be the first
+                </span>
               </div>
             )}
 
-            {/* Write review CTA – not logged in */}
-            {!isLoggedIn && (
+            {/* Write review CTA – not logged in (compact when empty) */}
+            {!isLoggedIn && !isEmpty && (
               <motion.div
                 className="mt-10 p-5 border border-white/[0.06] bg-[#0e0e12]"
                 initial={{ opacity: 0, y: 10 }}
@@ -605,30 +605,14 @@ export function ReviewSection({
                 ))}
               </div>
             ) : reviews.length === 0 ? (
-              <motion.div
-                className="py-12"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {/* Editorial empty state */}
-                <div className="relative">
-                  <div
-                    className="font-heading text-cream/[0.03] leading-none select-none uppercase"
-                    style={{ fontSize: "clamp(4rem, 10vw, 8rem)" }}
-                  >
-                    FIRST
-                  </div>
-                  <div className="absolute inset-0 flex flex-col justify-center pl-2">
-                    <p className="font-mono text-[9px] text-gold tracking-[0.3em] uppercase mb-2">
-                      No Reviews Yet
-                    </p>
-                    <p className="font-body text-sm text-cream/30 max-w-xs leading-relaxed">
-                      Be the first to review this product. Your voice shapes the culture.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+              !isEmpty ? null : (
+                <Link
+                  href="/login"
+                  className="btn-ghost self-start text-[9px] font-mono tracking-[0.2em] uppercase shrink-0"
+                >
+                  Sign In to Review
+                </Link>
+              )
             ) : (
               <AnimatePresence mode="popLayout">
                 <motion.div className="space-y-8" layout>

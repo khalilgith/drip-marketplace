@@ -170,7 +170,7 @@ export function FilterSidebar({
                 transition={{ duration: 0.22, ease: "easeInOut" }}
                 className="overflow-hidden"
               >
-                <div className="pt-4 space-y-0.5 max-h-64 overflow-y-auto scrollbar-thin">
+                <div className="pt-4 space-y-0.5 max-h-72 overflow-y-auto" style={{ scrollbarWidth: "thin", scrollbarColor: "rgba(201,168,76,0.3) transparent" }}>
                   {brands.length === 0 && (
                     <p className="text-[11px] text-ash/50 px-3 py-1 font-mono">
                       No brands
