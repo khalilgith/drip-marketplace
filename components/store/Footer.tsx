@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useState } from "react"
 import { toast } from "sonner"
 import { ArrowUpRight } from "lucide-react"
+import { ScrollReveal } from "@/components/store/ScrollReveal"
 
 const SHOP_LINKS    = ["/shop", "/shop?category=Men", "/shop?category=Women", "/shop?category=Accessories"]
 const SHOP_LABELS   = ["All Products", "Men", "Women", "Accessories"]
@@ -25,7 +26,7 @@ export function Footer() {
 
       {/* ── Newsletter ─────────────────────────────────────────────── */}
       <div className="border-b border-cream/5">
-        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-14 lg:py-16">
+        <ScrollReveal className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 py-14 lg:py-16">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
             <div>
               <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-3">
@@ -56,7 +57,7 @@ export function Footer() {
               </button>
             </form>
           </div>
-        </div>
+        </ScrollReveal>
       </div>
 
       {/* ── Links grid ─────────────────────────────────────────────── */}

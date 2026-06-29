@@ -11,6 +11,7 @@ import {
 } from "framer-motion"
 import Link from "next/link"
 import { ShoppingBag, Check, Minus, Plus, Ruler, Truck, RotateCcw, Shield } from "lucide-react"
+import { ScrollReveal, revealItem } from "@/components/store/ScrollReveal"
 import { toast } from "sonner"
 import { useCartStore } from "@/lib/store/cartStore"
 import { useWishlistStore } from "@/lib/store/wishlistStore"
@@ -652,37 +653,24 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               )}
 
               {/* Trust strip */}
-              <motion.div
-                variants={fadeUp}
-                className="border-t border-white/[0.06] pt-6"
-              >
+              <ScrollReveal className="border-t border-white/[0.06] pt-6" delay={0.6}>
                 <div className="grid grid-cols-3 gap-4">
                   {[
                     { icon: Truck, label: "Free Shipping", sub: "Orders over $200" },
                     { icon: RotateCcw, label: "30-Day Returns", sub: "Easy & free" },
                     { icon: Shield, label: "Secure Checkout", sub: "SSL encrypted" },
                   ].map(({ icon: Icon, label, sub }, i) => (
-                    <motion.div
-                      key={label}
-                      className="flex flex-col items-center text-center gap-2"
-                      initial={{ opacity: 0, y: 14 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        delay: 0.9 + i * 0.08,
-                        duration: 0.5,
-                        ease: [0.16, 1, 0.3, 1] as [number, number, number, number],
-                      }}
-                    >
+                    <div key={label} className="flex flex-col items-center text-center gap-2">
                       <Icon size={14} className="text-gold/60" />
                       <span className="font-mono text-[8px] text-cream/50 tracking-[0.1em] uppercase leading-tight">
                         {label}
                         <br />
                         <span className="text-cream/25">{sub}</span>
                       </span>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </ScrollReveal>
             </motion.div>
           </motion.div>
         </div>
@@ -691,47 +679,30 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       {/* ═══════════════════════════════════════════════════════════════════
           BELOW THE FOLD: Complete the Look
       ═══════════════════════════════════════════════════════════════════ */}
-      <motion.section
-        className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 pb-24 mt-10"
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-80px" }}
-        variants={containerVariants}
-      >
-        {/* Section header */}
-        <motion.div
-          variants={fadeUp}
-          className="flex items-center justify-between mb-10"
-        >
-          <div className="flex items-center gap-6">
-            <div className="h-px w-8 bg-gold/40" />
-            <span className="font-mono text-[9px] text-gold tracking-[0.3em] uppercase">
-              Complete the Look
-            </span>
+      <section className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-16 pb-24 mt-10">
+        <ScrollReveal>
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-6">
+              <div className="h-px w-8 bg-gold/40" />
+              <span className="font-mono text-[9px] text-gold tracking-[0.3em] uppercase">
+                Complete the Look
+              </span>
+            </div>
+            <div className="flex-1 mx-8 h-px bg-gradient-to-l from-transparent via-white/8 to-transparent" />
+            <button className="font-mono text-[9px] text-cream/25 tracking-[0.2em] uppercase hover:text-cream/50 transition-colors">
+              View All
+            </button>
           </div>
-          <motion.div
-            className="h-px bg-gradient-to-l from-transparent via-white/8 to-transparent flex-1 mx-8"
-            initial={{ scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] as [number, number, number, number], delay: 0.3 }}
-            style={{ transformOrigin: "right" }}
-          />
-          <button className="font-mono text-[9px] text-cream/25 tracking-[0.2em] uppercase hover:text-cream/50 transition-colors">
-            View All
-          </button>
-        </motion.div>
+        </ScrollReveal>
 
-        {/* Look cards grid */}
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-4"
-          variants={staggerChildren}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[0, 1, 2].map((i) => (
-            <LookCard key={i} index={i} />
+            <ScrollReveal key={i} delay={i * 0.1} duration={0.6}>
+              <LookCard index={i} />
+            </ScrollReveal>
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </section>
     </div>
   )
 }

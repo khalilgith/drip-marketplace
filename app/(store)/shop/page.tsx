@@ -8,6 +8,7 @@ import { SlidersHorizontal, X, ChevronDown } from "lucide-react"
 import { FilterSidebar } from "@/components/store/FilterSidebar"
 import { ProductGrid } from "@/components/store/ProductGrid"
 import { ProductCardSkeletonGrid } from "@/components/store/ProductCardSkeleton"
+import { ScrollReveal } from "@/components/store/ScrollReveal"
 
 /* ─── Types ────────────────────────────────────────────────────────────────── */
 interface Product {
@@ -327,14 +328,14 @@ function ShopContent() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
       {/* ── Page header ── */}
-      <div className="mb-10">
+      <ScrollReveal>
         <p className="text-gold text-[10px] tracking-[0.25em] uppercase font-mono mb-2">
           {subheading}
         </p>
         <h1 className="text-4xl lg:text-5xl font-heading font-bold tracking-tight text-cream/95 uppercase">
           {heading}
         </h1>
-      </div>
+      </ScrollReveal>
 
       {/* ── Toolbar ── */}
       <div className="flex items-center justify-between mb-4 gap-4">
@@ -427,7 +428,9 @@ function ShopContent() {
               </button>
             </motion.div>
           ) : (
-            <ProductGrid products={displayProducts} />
+            <ScrollReveal delay={0.15} duration={0.6}>
+              <ProductGrid products={displayProducts} />
+            </ScrollReveal>
           )}
         </div>
       </div>

@@ -91,9 +91,9 @@ export function HeroBanner() {
         <div className="hidden lg:block absolute right-0 top-0 bottom-0 w-[44%] xl:w-[47%] overflow-hidden">
           {/* Image */}
           <img
-            src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1000&q=90"
-            alt="DRIP editorial"
-            className="w-full h-full object-cover object-center hero-image-enter"
+            src="https://images.unsplash.com/photo-1771711286856-765bdbca923f?w=1000&q=90"
+            alt="Jordan 1 Retro High OG streetwear style"
+            className="w-full h-full object-cover object-[center_30%] hero-image-enter"
           />
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/20 to-transparent" />
@@ -117,8 +117,8 @@ export function HeroBanner() {
           {/* Second floating image */}
           <div className="absolute bottom-16 right-8 xl:right-12 w-32 xl:w-40 hero-fade hero-fade-2">
             <img
-              src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?w=400&q=80"
-              alt=""
+              src="https://images.unsplash.com/photo-1771445653477-8af04719436e?w=400&q=80"
+              alt="Air Jordan 1 Retro High OG close-up"
               className="w-full aspect-[3/4] object-cover opacity-70"
             />
           </div>

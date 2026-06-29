@@ -1,61 +1,35 @@
 "use client"
 
-import { useEffect, useRef } from "react"
 import { motion } from "framer-motion"
 import { HeroBanner } from "@/components/store/HeroBanner"
 import { ProductGrid } from "@/components/store/ProductGrid"
-import { ArrowRight, ArrowUpRight } from "lucide-react"
+import { ScrollReveal, revealItem, fadeSlideLeft, fadeSlideRight } from "@/components/store/ScrollReveal"
+import { ArrowRight, ArrowUpRight, Shield, Sparkles, Package, Repeat } from "lucide-react"
 import Link from "next/link"
 import { useFeaturedProducts } from "@/lib/hooks/useProducts"
 import { useBrands } from "@/lib/hooks/useBrands"
 
-const fadeUp = {
-  hidden:  { opacity: 0, y: 32 },
-  visible: (i: number) => ({
-    opacity: 1, y: 0,
-    transition: { duration: 0.7, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] as [number, number, number, number] },
-  }),
-}
-
 export default function HomePage() {
   const { products, loading: productsLoading } = useFeaturedProducts()
-  const { brands }                              = useBrands(true)
-  const sectionRef = useRef<HTMLElement>(null)
-
-  // Scroll reveal for non-Framer elements
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && e.target.classList.add("visible")),
-      { threshold: 0.12 }
-    )
-    document.querySelectorAll(".reveal").forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [products, brands])
+  const { brands } = useBrands(true)
 
   return (
     <>
       <HeroBanner />
 
       {/* ── Featured Products ─────────────────────────────────── */}
-      <section ref={sectionRef} className="bg-navy py-24 lg:py-32">
+      <ScrollReveal className="bg-navy py-24 lg:py-32">
         <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
-
           <div className="flex items-end justify-between mb-14 lg:mb-16">
-            <div>
-              <motion.p
-                className="section-label mb-3"
-                initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
-              >
+            <ScrollReveal direction="left" distance={24}>
+              <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-3">
                 Curated Selection
-              </motion.p>
-              <motion.h2
-                className="font-heading font-black text-[36px] lg:text-[52px] xl:text-[60px] uppercase leading-[0.9] tracking-tight text-cream"
-                initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
-              >
+              </p>
+              <h2 className="font-heading font-black text-[36px] lg:text-[52px] xl:text-[60px] uppercase leading-[0.9] tracking-tight text-cream">
                 Featured<br />Products
-              </motion.h2>
-            </div>
-            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={fadeUp}>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal direction="right" distance={24} delay={0.15}>
               <Link
                 href="/shop"
                 className="hidden md:flex items-center gap-1.5 font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-cream/35 hover:text-gold transition-colors group"
@@ -63,7 +37,7 @@ export default function HomePage() {
                 View All
                 <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </Link>
-            </motion.div>
+            </ScrollReveal>
           </div>
 
           {productsLoading ? (
@@ -78,12 +52,9 @@ export default function HomePage() {
               ))}
             </div>
           ) : (
-            <motion.div
-              initial={{ opacity: 0 }} whileInView={{ opacity: 1 }}
-              viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.2 }}
-            >
+            <ScrollReveal delay={0.25} duration={0.6}>
               <ProductGrid products={products} />
-            </motion.div>
+            </ScrollReveal>
           )}
 
           <div className="mt-10 flex justify-center md:hidden">
@@ -93,24 +64,61 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
+      </ScrollReveal>
+
+      {/* ── Why DRIP ───────────────────────────────────────────── */}
+      <section className="bg-navy border-t border-cream/5 py-24 lg:py-32 overflow-hidden">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+          <ScrollReveal className="text-center mb-16">
+            <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-3">
+              Why DRIP
+            </p>
+            <h2 className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream">
+              Built for the culture
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10">
+            {[
+              { icon: Shield, title: "Authentic Only", desc: "Every item verified. No fakes, no knockoffs, no compromises." },
+              { icon: Sparkles, title: "Limited Drops", desc: "Exclusive releases you won&apos;t find anywhere else. When it&apos;s gone, it&apos;s gone." },
+              { icon: Package, title: "Premium Curation", desc: "Handpicked from the most sought-after brands across the globe." },
+              { icon: Repeat, title: "Easy Returns", desc: "30-day hassle-free returns. Because fit should be perfect." },
+            ].map((item, i) => (
+              <motion.div
+                key={item.title}
+                className="text-center"
+                custom={i}
+                variants={revealItem}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+              >
+                <div className="w-14 h-14 mx-auto mb-5 border border-cream/10 flex items-center justify-center bg-cream/3">
+                  <item.icon className="h-5 w-5 text-gold" />
+                </div>
+                <h3 className="font-heading font-bold text-[15px] uppercase tracking-wide text-cream mb-2">
+                  {item.title}
+                </h3>
+                <p className="font-body text-[12px] text-cream/35 leading-relaxed max-w-[220px] mx-auto">
+                  {item.desc}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ── Brands Marquee ─────────────────────────────────────── */}
       {brands.length > 0 && (
-        <section className="bg-navy border-t border-cream/5 py-20 overflow-hidden">
+        <ScrollReveal className="bg-navy border-t border-cream/5 py-20 overflow-hidden">
           <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16 mb-12 text-center">
-            <motion.p
-              className="section-label mb-3"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
-            >
+            <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-3">
               Featured Brands
-            </motion.p>
-            <motion.h2
-              className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
-            >
+            </p>
+            <h2 className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream">
               The Labels Defining Streetwear
-            </motion.h2>
+            </h2>
           </div>
           <div className="marquee">
             <div className="marquee-inner gap-10 px-6">
@@ -132,11 +140,11 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </section>
+        </ScrollReveal>
       )}
 
       {/* ── Editorial CTA ───────────────────────────────────────── */}
-      <section className="bg-cream relative overflow-hidden py-24 lg:py-32">
+      <ScrollReveal className="bg-cream relative overflow-hidden py-24 lg:py-32">
         <span
           className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/4 font-heading font-black leading-none select-none pointer-events-none text-navy/5"
           style={{ fontSize: "clamp(120px, 18vw, 240px)" }}
@@ -147,44 +155,101 @@ export default function HomePage() {
 
         <div className="relative z-10 max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
           <div className="max-w-2xl">
-            <motion.p
-              className="section-label text-gold mb-4"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={0} variants={fadeUp}
-            >
-              Join the Movement
-            </motion.p>
-            <motion.h2
-              className="font-heading font-black text-[42px] sm:text-[56px] lg:text-[72px] xl:text-[88px] uppercase leading-[0.88] tracking-tight text-navy mb-6"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={1} variants={fadeUp}
-            >
-              Ready to<br />
-              <span style={{ WebkitTextStroke: "2px #08080C", color: "transparent" }}>
-                Elevate?
-              </span>
-            </motion.h2>
-            <motion.p
-              className="font-body text-[13px] text-navy/45 max-w-sm leading-relaxed mb-10"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={2} variants={fadeUp}
-            >
-              Discover premium streetwear from the world&apos;s most sought-after brands.
-              Limited drops. Zero compromises.
-            </motion.p>
-            <motion.div
-              className="flex flex-wrap items-center gap-4"
-              initial="hidden" whileInView="visible" viewport={{ once: true }} custom={3} variants={fadeUp}
-            >
-              <Link href="/shop" className="btn-drip">
-                <span>Shop the Collection</span>
-                <ArrowRight className="h-3 w-3" />
-              </Link>
-              <Link
-                href="/shop?category=Women"
-                className="font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-navy/40 hover:text-navy transition-colors flex items-center gap-1.5 group"
+            <ScrollReveal direction="left" distance={24}>
+              <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-4">
+                Join the Movement
+              </p>
+            </ScrollReveal>
+            <ScrollReveal direction="left" distance={24} delay={0.1}>
+              <h2 className="font-heading font-black text-[42px] sm:text-[56px] lg:text-[72px] xl:text-[88px] uppercase leading-[0.88] tracking-tight text-navy mb-6">
+                Ready to<br />
+                <span style={{ WebkitTextStroke: "2px #08080C", color: "transparent" }}>
+                  Elevate?
+                </span>
+              </h2>
+            </ScrollReveal>
+            <ScrollReveal direction="left" distance={24} delay={0.2}>
+              <p className="font-body text-[13px] text-navy/45 max-w-sm leading-relaxed mb-10">
+                Discover premium streetwear from the world&apos;s most sought-after brands.
+                Limited drops. Zero compromises.
+              </p>
+            </ScrollReveal>
+            <ScrollReveal direction="left" distance={24} delay={0.3}>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link href="/shop" className="btn-drip">
+                  <span>Shop the Collection</span>
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+                <Link
+                  href="/shop?category=Women"
+                  className="font-body text-[10px] font-semibold tracking-[0.18em] uppercase text-navy/40 hover:text-navy transition-colors flex items-center gap-1.5 group"
+                >
+                  Explore Women
+                  <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
+                </Link>
+              </div>
+            </ScrollReveal>
+          </div>
+        </div>
+      </ScrollReveal>
+
+      {/* ── Testimonials ────────────────────────────────────────── */}
+      <section className="bg-navy border-t border-cream/5 py-24 lg:py-32">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-10 lg:px-16">
+          <ScrollReveal className="text-center mb-16">
+            <p className="font-mono text-[9px] tracking-[0.3em] uppercase text-gold mb-3">
+              Trusted by
+            </p>
+            <h2 className="font-heading font-black text-[30px] lg:text-[42px] uppercase leading-none tracking-tight text-cream">
+              What our people say
+            </h2>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "The quality is unreal. I've been buying sneakers for 15 years and nothing compares to the curation here.",
+                name: "Marcus T.",
+                role: "Verified Buyer",
+              },
+              {
+                quote: "Finally a streetwear site that actually cares about authenticity. Every piece I've ordered has been flawless.",
+                name: "Sarah K.",
+                role: "VIP Member",
+              },
+              {
+                quote: "Limited drops keep it exciting. I've copped some insane pieces that nobody else has. Love it.",
+                name: "Jaylen R.",
+                role: "Drop Notifications",
+              },
+            ].map((testimonial, i) => (
+              <motion.div
+                key={testimonial.name}
+                className="border border-cream/8 p-8 bg-cream/3"
+                custom={i}
+                variants={revealItem}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
               >
-                Explore Women
-                <span className="inline-block transition-transform group-hover:translate-x-1">→</span>
-              </Link>
-            </motion.div>
+                <div className="flex gap-1 mb-5">
+                  {Array.from({ length: 5 }).map((_, s) => (
+                    <span key={s} className="text-gold text-[10px]">★</span>
+                  ))}
+                </div>
+                <p className="font-body text-[13px] text-cream/60 leading-relaxed mb-6 italic">
+                  &ldquo;{testimonial.quote}&rdquo;
+                </p>
+                <div>
+                  <p className="font-heading font-bold text-[13px] uppercase tracking-wide text-cream">
+                    {testimonial.name}
+                  </p>
+                  <p className="font-mono text-[8px] tracking-[0.2em] uppercase text-cream/25 mt-1">
+                    {testimonial.role}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>

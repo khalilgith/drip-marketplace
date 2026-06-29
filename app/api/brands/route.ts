@@ -1,20 +1,25 @@
 import { NextResponse } from "next/server"
 import { createServiceClient } from "@/lib/supabase/server"
+import { mockBrands } from "@/lib/mock-data"
 
 export async function GET() {
-  const supabase = createServiceClient()
-  const { data, error } = await supabase
-    .from("brands")
-    .select("*")
-    .order("name")
+  try {
+    const supabase = createServiceClient()
+    const { data, error } = await supabase
+      .from("brands")
+      .select("*")
+      .order("name")
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
+    if (error) throw new Error(error.message)
+
+    return NextResponse.json(data, {
+      headers: { "Cache-Control": "no-store, must-revalidate" },
+    })
+  } catch {
+    return NextResponse.json(mockBrands, {
+      headers: { "Cache-Control": "no-store, must-revalidate" },
+    })
   }
-
-  return NextResponse.json(data, {
-    headers: { "Cache-Control": "no-store, must-revalidate" },
-  })
 }
 
 export async function POST(request: Request) {
